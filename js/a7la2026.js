@@ -10,7 +10,10 @@
             isTampered = true;
         } else {
             var currentHref = linkEl.getAttribute('href') || "";
-            if (!currentHref.includes(myUrl) || !linkEl.innerText.includes(myName)) {
+            if (!currentHref.includes(myUrl)) {
+                isTampered = true;
+            }
+            if (!linkEl.innerText.includes(myName)) {
                 isTampered = true;
             }
             var styles = window.getComputedStyle(linkEl);
@@ -69,6 +72,7 @@ function fetchThumbnails() {
 
         if (topicLink && !$thumbnail.attr('data-loaded')) {
             $thumbnail.attr('data-loaded', 'loading');
+
             $.ajax({
                 url: topicLink,
                 type: 'GET',
@@ -103,9 +107,9 @@ function shareTopic(platform) {
     var title = encodeURIComponent(document.title);
     var shareLink = '';
     
-    if (platform === 'wa') shareLink = 'https://api.whatsapp.com/send?text=' + title + ' - ' + url;
-    else if (platform === 'fb') shareLink = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
-    else if (platform === 'tw') shareLink = 'https://twitter.com/intent/tweet?text=' + title + '&url=' + url;
+    if (platform === 'wa') { shareLink = 'https://api.whatsapp.com/send?text=' + title + ' - ' + url; } 
+    else if (platform === 'fb') { shareLink = 'https://www.facebook.com/sharer/sharer.php?u=' + url; } 
+    else if (platform === 'tw') { shareLink = 'https://twitter.com/intent/tweet?text=' + title + '&url=' + url; }
     else if (platform === 'cp') {
         var dummy = document.createElement('input'), text = window.location.href.split('#')[0];
         document.body.appendChild(dummy); dummy.value = text; dummy.select();
@@ -113,7 +117,7 @@ function shareTopic(platform) {
         alert('تم نسخ رابط الموضوع بنجاح!'); return;
     }
     
-    if(shareLink !== '') window.open(shareLink, '_blank', 'width=600,height=400');
+    if(shareLink !== '') { window.open(shareLink, '_blank', 'width=600,height=400'); }
 }
 
 function openAuthModal(tabType) { 
@@ -148,12 +152,7 @@ function toggleMenu(menuId) {
 }
 
 function openSearch() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchInput').focus(); }
-
-function closeSearch() { 
-    document.getElementById('searchModal').classList.remove('active'); 
-    document.getElementById('searchInput').value = ''; 
-    document.getElementById('searchResults').innerHTML = '<div class="search-placeholder">قم بكتابة حرفين على الأقل لبدء البحث...</div>'; 
-}
+function closeSearch() { document.getElementById('searchModal').classList.remove('active'); document.getElementById('searchInput').value = ''; document.getElementById('searchResults').innerHTML = '<div class="search-placeholder">قم بكتابة حرفين على الأقل لبدء البحث...</div>'; }
 
 function performSearch() {
     const query = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -230,19 +229,25 @@ function toggleSubBoards(btn) {
 
 function initUserDataAndNotifications() {
     if (typeof _userdata !== "undefined") {
-        let extractedAvatar = 'https://i.servimg.com/u/f60/19/93/33/22/user10.png';
         if (_userdata.avatar && _userdata.avatar !== "") {
+            let extractedAvatar = "";
             if (_userdata.avatar.includes('<img')) {
-                let match = _userdata.avatar.match(/src=["'](.*?)["']/);
-                if (match && match[1]) extractedAvatar = match[1];
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = _userdata.avatar;
+                let imgEl = tempDiv.querySelector('img');
+                if(imgEl) extractedAvatar = imgEl.src;
             } else {
                 extractedAvatar = _userdata.avatar;
             }
+            if (extractedAvatar) {
+                document.querySelectorAll('#customUserAvatar, #customUserAvatarLarge').forEach(el => {
+                    el.src = extractedAvatar;
+                });
+            }
         }
-        document.querySelectorAll('#customUserAvatar, #customUserAvatarLarge, #current-user-avatar').forEach(el => el.src = extractedAvatar);
-
         if (_userdata.username && _userdata.username !== "") {
-            document.querySelectorAll('#customUserName, #current-user-name').forEach(el => el.textContent = _userdata.username);
+            const userNameEl = document.getElementById('customUserName');
+            if(userNameEl) userNameEl.textContent = _userdata.username;
         }
     }
 
@@ -272,12 +277,14 @@ function initUserDataAndNotifications() {
             const faNotifBtn = document.getElementById('fa_notifications');
             if (faNotifBtn) {
                 faNotifBtn.click(); 
+                
                 let checkAttempts = 0;
                 const checkNotifs = setInterval(function() {
                     const nativeNotifs = document.getElementById('notif_list');
                     if (nativeNotifs && nativeNotifs.innerHTML.trim() !== '') {
                         clearInterval(checkNotifs); 
                         listContainer.innerHTML = nativeNotifs.innerHTML;
+                        
                         const liveNotif = document.getElementById('live_notif');
                         if(liveNotif) liveNotif.style.display = 'none';
                     }
@@ -296,30 +303,31 @@ function initUserDataAndNotifications() {
     }
 }
 
-function initStaticSlider() {
-    const listContainer = document.getElementById('sideTopicsList');
-    if(!listContainer) return;
-
+(function() {
     const topicsData = [
-        { id: 0, img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', tag: '<i class="fas fa-bolt"></i> حصري ومثبت', title: 'ثورة الذكاء الاصطناعي في 2024', author: 'الإدارة', time: 'منذ ساعتين' },
-        { id: 1, img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', tag: 'ريادة أعمال', title: 'كيف تبدأ مشروعك الناشئ بخطوات عملية', author: 'سارة_99', time: 'منذ 5 ساعات' },
-        { id: 2, img: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80', tag: 'تصوير', title: 'دليلك لاختيار الكاميرا المناسبة', author: 'أحمد_علي', time: 'أمس' }
+        { id: 0, img: 'https://i88.servimg.com/u/f88/18/93/95/45/app-de10.jpg', tag: '<i class="fas fa-bolt"></i> ', title: '', author: '', time: '' },
+        { id: 1, img: 'https://i88.servimg.com/u/f88/18/93/95/45/yooo-a10.jpg', tag: '', title: '', author: '', time: '' },
+        { id: 2, img: 'https://i88.servimg.com/u/f88/18/93/95/45/ao-ai-10.jpg', tag: '', title: '', author: '', time: '' }
     ];
 
     let currentActiveSlide = 0; 
     let slideIntervalTimer;
 
-    topicsData.forEach((topic, index) => {
-        const itemHTML = `<div class="side-item ${index === currentActiveSlide ? 'active-slide' : ''}" data-index="${index}">
-                <div class="side-img" style="background-image: url('${topic.img}');"></div>
-                <div class="side-info"><span>${topic.tag.replace(/<[^>]*>?/gm, '')}</span><h4>${topic.title}</h4></div>
-            </div>`;
-        listContainer.insertAdjacentHTML('beforeend', itemHTML);
-    });
-
-    document.querySelectorAll('.side-item').forEach(item => {
-        item.addEventListener('click', function() { changeSlide(parseInt(this.getAttribute('data-index'))); });
-    });
+    function buildSideList() {
+        const listContainer = document.getElementById('sideTopicsList');
+        if(!listContainer) return;
+        listContainer.innerHTML = '';
+        topicsData.forEach((topic, index) => {
+            const itemHTML = `<div class="side-item ${index === currentActiveSlide ? 'active-slide' : ''}" data-index="${index}">
+                    <div class="side-img" style="background-image: url('${topic.img}');"></div>
+                    <div class="side-info"><span>${topic.tag.replace(/<[^>]*>?/gm, '')}</span><h4>${topic.title}</h4></div>
+                </div>`;
+            listContainer.insertAdjacentHTML('beforeend', itemHTML);
+        });
+        document.querySelectorAll('.side-item').forEach(item => {
+            item.addEventListener('click', function() { changeSlide(parseInt(this.getAttribute('data-index'))); });
+        });
+    }
 
     function renderHero(index) {
         const data = topicsData[index];
@@ -344,25 +352,45 @@ function initStaticSlider() {
     function startSlideTimer() { slideIntervalTimer = setInterval(autoNextSlide, 4000); }
     function resetSlideTimer() { clearInterval(slideIntervalTimer); startSlideTimer(); }
 
-    const sliderSection = document.getElementById('sliderSection');
-    if(sliderSection) {
-        sliderSection.addEventListener('mouseenter', () => clearInterval(slideIntervalTimer));
-        sliderSection.addEventListener('mouseleave', startSlideTimer);
+    document.addEventListener("DOMContentLoaded", function() {
+        const sliderSection = document.getElementById('sliderSection');
+        if(sliderSection) {
+            sliderSection.addEventListener('mouseenter', () => clearInterval(slideIntervalTimer));
+            sliderSection.addEventListener('mouseleave', startSlideTimer);
+        }
+        buildSideList(); 
+        renderHero(0); 
+        startSlideTimer();
+    });
+})();
+
+document.addEventListener("DOMContentLoaded", function () {
+    const authModalEl = document.getElementById('authModal');
+    if(authModalEl) {
+        authModalEl.addEventListener('click', function(e) { if(e.target === this) closeAuthModal(); });
     }
+    const searchModalEl = document.getElementById('searchModal');
+    if(searchModalEl) {
+        searchModalEl.addEventListener('click', function(e) { if(e.target === this) closeSearch(); });
+    }
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.nav-icons') && !event.target.closest('#settingsPanel')) { 
+            document.querySelectorAll('.dropdown-panel').forEach(d => d.classList.remove('active')); 
+        }
+    });
 
-    renderHero(0); 
-    startSlideTimer();
-}
+    loadSettings(); 
+    initUserDataAndNotifications();
 
-function initDynamicSlider() {
     const sliderContainer = document.getElementById('flx-dynamic-slider');
     if (!sliderContainer) return;
+
     const sideItems = document.querySelectorAll('.flx-side-item');
     if (sideItems.length === 0) return;
 
     let currentActiveSlide = 0;
     let slideIntervalTimer;
-    const fallbackImage = 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+    const fallbackImage = 'https://i88.servimg.com/u/f88/18/93/95/45/organi10.jpg';
 
     async function extractImageFromMetaTags(url, itemElement, index) {
         try {
@@ -380,16 +408,19 @@ function initDynamicSlider() {
                     finalImageUrl = fetchedImg;
                 }
             }
+
             let imgDiv = itemElement.querySelector('.flx-side-img');
             if (imgDiv) {
                 imgDiv.style.backgroundImage = `url('${finalImageUrl}')`;
                 imgDiv.classList.remove('flx-loading-img');
             }
             itemElement.setAttribute('data-img', finalImageUrl);
+
             if (index === currentActiveSlide) {
                 document.getElementById('flx-heroBg').style.backgroundImage = `url('${finalImageUrl}')`;
             }
         } catch (error) {
+            console.error(error);
             let imgDiv = itemElement.querySelector('.flx-side-img');
             if (imgDiv) {
                 imgDiv.style.backgroundImage = `url('${fallbackImage}')`;
@@ -410,6 +441,7 @@ function initDynamicSlider() {
     function renderHero(index) {
         const item = sideItems[index];
         if (!item) return;
+
         try {
             const titleEl = item.querySelector('.flx-post-title');
             const timeEl = item.querySelector('.flx-time-val');
@@ -428,7 +460,7 @@ function initDynamicSlider() {
 
             sideItems.forEach(el => el.classList.remove('flx-active-slide'));
             item.classList.add('flx-active-slide');
-        } catch (e) {}
+        } catch (e) { console.error(e); }
     }
 
     function changeSlide(index) { currentActiveSlide = index; renderHero(index); resetSlideTimer(); }
@@ -441,7 +473,7 @@ function initDynamicSlider() {
 
     renderHero(0);
     startSlideTimer();
-}
+});
 
 $(document).ready(function() {
     var savedLayout = localStorage.getItem('forum_layout');
@@ -450,21 +482,11 @@ $(document).ready(function() {
         $('.layout-modes button[data-layout="grid"]').addClass('active-btn').siblings().removeClass('active-btn');
     }
 
-    loadSettings();
-    initUserDataAndNotifications();
-    initStaticSlider();
-    initDynamicSlider();
-
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.flx-contact-wrapper').length) {
             $('.flx-contact-toggle.active').removeClass('active');
             $('.flx-contact-list:visible').slideUp(200);
         }
-        if (!$(e.target).closest('.nav-icons') && !$(e.target).closest('#settingsPanel')) { 
-            $('.dropdown-panel').removeClass('active'); 
-        }
-        if ($(e.target).is('#authModal')) closeAuthModal();
-        if ($(e.target).is('#searchModal')) closeSearch();
     });
 
     $('.content img:not(.smilies):not([src*="illiweb"]):not([src*="hits"])').each(function() {
@@ -480,20 +502,21 @@ $(document).ready(function() {
         }
     });
 
-    if(typeof Fancybox !== 'undefined') {
-        Fancybox.bind('[data-fancybox="gallery"]', {
-            Toolbar: { display: { left: ["infobar"], middle: [], right: ["zoomIn", "zoomOut", "close"] } }
-        });
-    }
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        Toolbar: { display: { left: ["infobar"], middle: [], right: ["zoomIn", "zoomOut", "close"] } }
+    });
 
     $('.flx-contact-toggle').on('click', function(e) {
         e.preventDefault();
         var $btn = $(this);
         var $list = $btn.siblings('.flx-contact-list');
+
         $btn.toggleClass('active');
+        
         if($list.text().trim() === "" && $list.find('img').length === 0) {
             $list.html('<span style="font-size:12px;color:gray;padding:0 5px;">لا توجد بيانات</span>');
         }
+
         $list.slideToggle(250);
     });
     
@@ -554,6 +577,7 @@ $(document).ready(function() {
 
     $(document).on('click', '.fa_like_div .rep-button', function(e) {
         e.preventDefault();
+        
         if(typeof _userdata === "undefined" || _userdata.session_logged_in != 1) {
             alert("يجب تسجيل الدخول للإعجاب بالمواضيع.");
             return;
@@ -566,8 +590,10 @@ $(document).ready(function() {
         var postId = $article.attr('id').replace('p', '');
         var $likesBox = $('#likes_p' + postId);
         var $likersContainer = $likesBox.find('.flx-likers-container');
+        
         var urlLike = $btn.attr('data-href');
         var urlRmLike = $btn.attr('data-href-rm');
+        
         var currentUserIdUrl = '/u' + _userdata.user_id;
         var myName = _userdata.username;
         var myAvatar = 'https://i.servimg.com/u/f60/19/93/33/22/user10.png';
@@ -583,6 +609,7 @@ $(document).ready(function() {
 
         var $existingChip = $likersContainer.find('a[href^="'+currentUserIdUrl+'"]');
         var isLiked = $existingChip.length > 0;
+        
         var targetUrl = isLiked ? urlRmLike : urlLike;
         if(!targetUrl || targetUrl === '') return;
 
@@ -590,6 +617,7 @@ $(document).ready(function() {
 
         $.get(targetUrl, function() {
             $btn.removeClass('flx-processing').css('opacity', '1');
+            
             var currentCount = parseInt($btn.find('.like-count').text().replace(/[^0-9]/g, '')) || 0;
 
             if(isLiked) {
@@ -599,18 +627,23 @@ $(document).ready(function() {
                         $likesBox.slideUp(250);
                     }
                 });
+                
                 $btn.find('.like-icon').text('thumb_up_off_alt');
                 $btn.find('.like-text').text('إعجاب');
                 var newCount = Math.max(0, currentCount - 1);
                 $btn.find('.like-count').text(newCount > 0 ? newCount : '');
+                
             } else {
                 var chipHtml = '<a href="'+currentUserIdUrl+'" class="flx-liker-chip" style="display:none;"><img src="'+myAvatar+'" alt="'+myName+'"> <span>'+myName+'</span></a>';
+                
                 if($likesBox.is(':hidden')) {
                     $likersContainer.empty(); 
                     $likesBox.slideDown(250);
                 }
+                
                 $likersContainer.prepend(chipHtml);
                 $likersContainer.find('a:first').fadeIn(300);
+                
                 $btn.find('.like-icon').text('thumb_up');
                 $btn.find('.like-text').text('إلغاء الإعجاب');
                 $btn.find('.like-count').text(currentCount + 1);
@@ -622,6 +655,7 @@ $(document).ready(function() {
 
     var titleText = $('#topic-main-title').text().replace(/<[^>]+>/g, ' ').trim();
     var contentText = $('#first-post-content').text().replace(/<[^>]+>/g, ' ').trim();
+
     var stopWords = ['في','من','على','إلى','عن','مع','هذا','هذه','أن','إن','ولا','وما','كيف','كان','كانت','التي','الذي','هو','هي','تم','كل','وقد','أو','كما','بين','عند','بعد','قبل','حتى','إذا','فقط','غير','ذلك','هل','ولم','أنه','بها','به','عليه','إليه','أنا','نحن','لكن','ليس','ولكن','إلا','أكثر','بعض','أيضا','حيث','ومن','فإن','أجل','ذات','دون','أما'];
     var wordCounts = {};
 
@@ -652,6 +686,7 @@ $(document).ready(function() {
 
     var seenUsers = {};
     var participantsCount = 0;
+    
     $('#flx-participants .avatars-container').empty();
 
     $('.flx-main-topic, .flx-reply-topic').each(function() {
@@ -665,6 +700,7 @@ $(document).ready(function() {
         if (userName && userName !== "" && !seenUsers[uniqueKey] && userAvatarSrc) {
             seenUsers[uniqueKey] = true;
             participantsCount++;
+            
             var avatarHTML = '';
             if (userLink) {
                 avatarHTML = '<a href="'+userLink+'" title="'+userName+'"><img src="'+userAvatarSrc+'" alt="'+userName+'"></a>';
@@ -678,6 +714,14 @@ $(document).ready(function() {
     if(participantsCount > 0) {
         $('#dynamic-meta-box').css('display', 'flex');
         $('#flx-participants').css('display', 'flex');
+    }
+
+    if(typeof _userdata !== "undefined" && _userdata.session_logged_in == 1) {
+        $('#current-user-name').text(_userdata.username);
+        if(_userdata.avatar) {
+            var avatarMatch = _userdata.avatar.match(/src="([^"]+)"/);
+            if(avatarMatch && avatarMatch[1]) { $('#current-user-avatar').attr('src', avatarMatch[1]); }
+        }
     }
 
     $('#flx-mod-form a').each(function() {
