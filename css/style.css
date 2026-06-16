@@ -1221,7 +1221,7 @@ ul.profile-icons i.material-icons {
     
     /* آخر مشاركة */
     .modern-last-post { display: flex; align-items: center; justify-content: flex-end; gap: 15px; min-width: 250px; direction: ltr; }
-    .avatar-wrapper img { width: 45px !important; height: 45px !important; border-radius: 50% !important; object-fit: cover !important; border: 2px solid var(--border-color) !important; padding: 2px; background: var(--card-bg); flex-shrink: 0; display: block; }
+    .avatar-wrapper img { width: 90px !important; height: 90px !important; border-radius: 50% !important; object-fit: cover !important; border: 2px solid var(--border-color) !important; padding: 2px; background: var(--card-bg); flex-shrink: 0; display: block; }
     
     .mlp-info { display: flex; flex-direction: column; text-align: right; gap: 5px; direction: rtl; }
     .mlp-author { font-weight: bold; color: var(--primary-color); font-size: 0.95rem; }
