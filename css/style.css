@@ -1416,6 +1416,8 @@ body.grid-layout .forum-category {
     border: none;
     box-shadow: none;
     padding: 0;
+    direction: rtl;
+    justify-content: right;
 }
 
 body.grid-layout span.cat-title {
@@ -1425,6 +1427,9 @@ body.grid-layout span.cat-title {
     border-radius: 8px;
     margin-bottom: 0;
     border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
 }
 .lp-meta strong span strong {
     padding-right: 5px;
